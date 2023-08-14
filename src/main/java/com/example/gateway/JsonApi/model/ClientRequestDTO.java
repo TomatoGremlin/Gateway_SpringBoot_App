@@ -1,8 +1,4 @@
-package com.example.gateway.JsonApi;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+package com.example.gateway.JsonApi.model;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -17,8 +13,9 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ClientRequestDTO {
     UUID requestId;
+    String service = "service 1";
     String timestamp;
     String client;
     String currency;
-    Optional<Integer> period;
+    int period;
 }

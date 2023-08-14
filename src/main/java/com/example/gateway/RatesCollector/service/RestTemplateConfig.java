@@ -1,4 +1,4 @@
-package com.example.gateway.RatesCollector.model;
+package com.example.gateway.RatesCollector.service;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

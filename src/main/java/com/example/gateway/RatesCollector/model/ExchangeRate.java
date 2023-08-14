@@ -20,7 +20,7 @@ import java.util.UUID;
 public class ExchangeRate {
 
     @ManyToOne
-    @JoinColumn(name="request_id")
+    @JoinColumn(name = "request_id")
     @JsonIgnore
     @OnDelete(action = OnDeleteAction.CASCADE)
     RatesResponseData ratesResponseData;

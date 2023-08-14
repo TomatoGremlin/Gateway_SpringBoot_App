@@ -1,7 +1,6 @@
 package com.example.gateway.RatesCollector.repository;
 
 import com.example.gateway.RatesCollector.model.RatesResponseData;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,10 +12,22 @@ import java.util.UUID;
 
 @Repository
 public interface RatesRepo extends JpaRepository<RatesResponseData, UUID> {
-    @Query("SELECT r FROM RatesResponseData r JOIN FETCH r.exchangeRateList e WHERE r.base = :currency ORDER BY r.timestamp DESC")
-    List<RatesResponseData> findLatestRatesByCurrency(@Param("currency") String currency, Pageable pageable);
-    @Query(value = "SELECT * FROM rates WHERE timestamp = :timestamp", nativeQuery = true)
+
+    @Query(value = "SELECT * FROM rates_data  WHERE base = :currency ORDER BY time_stamp DESC LIMIT 1", nativeQuery = true)
+    public RatesResponseData findLatestRatesByCurrency(@Param("currency") String currency);
+
+    @Query(value = "SELECT * FROM rates_data  WHERE base = :currency AND time_stamp >= :periodTimeStamp ORDER BY time_stamp DESC", nativeQuery = true)
+    public List<RatesResponseData> findLatestRatesByTimeStamp(@Param("currency") String currency, @Param("periodTimeStamp") long periodTimeStamp);
+
+    @Query(value = "SELECT * FROM rates_data WHERE time_stamp = :timestamp", nativeQuery = true)
     public Optional<RatesResponseData> findByTimestamp(@Param("timestamp") long timestamp);
+
+    @Query(value = "SELECT * FROM rates_data WHERE base = :currency", nativeQuery = true)
+    public Optional<RatesResponseData> findByBaseCurrency(@Param("currency") String currency);
+
+    @Query(value = "SELECT COUNT(*) FROM rates_data", nativeQuery = true)
+    public int checkIfEmpty();
+
 }
 
 

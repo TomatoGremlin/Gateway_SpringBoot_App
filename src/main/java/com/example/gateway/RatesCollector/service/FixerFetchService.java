@@ -9,7 +9,7 @@ import org.springframework.web.client.RestTemplate;
 
 // fetch rates data from the fixer api
 @Service
-public class FixerService {
+public class FixerFetchService {
     @Autowired
     private RestTemplate restTemplate;
     private static final String URL = "http://data.fixer.io/api/latest?access_key=1a60404e6ffe7202fe8acda599f9871a&base=EUR&symbols=GBP,JPY,CAD";
@@ -17,10 +17,8 @@ public class FixerService {
     public RatesDTO fetchData() {
         ResponseEntity<RatesDTO> response = restTemplate.getForEntity(URL, RatesDTO.class);
         if (response.getStatusCode() == HttpStatus.OK) {
-
             return response.getBody();
-        }
-        else {
+        } else {
             throw new RuntimeException("API request failed with status code: " + response.getStatusCode());
         }
     }
