@@ -1,17 +1,18 @@
-package com.example.gateway.RatesCollector.model;
+package com.example.gateway.RatesCollector.model.DataBase;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.LastModifiedDate;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Setter
-@ToString
+@ToString(exclude = {"base", "requestId"})
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -21,6 +22,7 @@ public class AuditLog {
 
     @Id
     @Column(name = "request_id")
+    @JsonIgnore
     UUID requestId;
     @LastModifiedDate
     @Column(name = "date_updated")
@@ -33,6 +35,6 @@ public class AuditLog {
     String currency;
 
     @Column(name = "rate")
-    double rate;
+    BigDecimal rate;
 
 }

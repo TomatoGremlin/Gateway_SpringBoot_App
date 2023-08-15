@@ -1,5 +1,6 @@
-package com.example.gateway.RatesCollector.model;
+package com.example.gateway.RatesCollector.model.DataBase;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -13,7 +14,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "requestId")
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -23,6 +24,7 @@ public class RatesResponseData {
 
     @Id
     @Column(name = "request_id")
+    @JsonIgnore
     UUID requestId;
 
     @Column(name = "time_stamp")

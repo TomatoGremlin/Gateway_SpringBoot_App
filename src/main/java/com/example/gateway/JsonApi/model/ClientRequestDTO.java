@@ -17,5 +17,5 @@ public class ClientRequestDTO {
     String timestamp;
     String client;
     String currency;
-    int period;
+    long period;
 }

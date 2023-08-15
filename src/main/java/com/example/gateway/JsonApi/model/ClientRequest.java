@@ -1,5 +1,6 @@
 package com.example.gateway.JsonApi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -20,6 +21,7 @@ public class ClientRequest {
 
     @Id
     @Column(name = "request_id")
+    @JsonIgnore
     UUID requestId;
 
     @Column(name = "service")

@@ -1,0 +1,12 @@
+version: '3.3'
+services:
+
+  redis:
+    image: redis:latest
+    command: ["redis-server", "--appendonly", "yes"]
+    hostname: "127.0.0.1"
+    ports:
+      - "6379:6379"
+    volumes:
+      - ../data/redis:/data
+

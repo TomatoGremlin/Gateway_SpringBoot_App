@@ -3,6 +3,7 @@ package com.example.gateway.RatesCollector.model.DTO;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 @Getter
@@ -17,5 +18,5 @@ public class RatesDTO {
     long timestamp;
     String base;
     String date;
-    Map<String, Double> rates;
+    Map<String, BigDecimal> rates;
 }

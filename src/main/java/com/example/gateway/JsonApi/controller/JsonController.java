@@ -3,7 +3,8 @@ package com.example.gateway.JsonApi.controller;
 import com.example.gateway.JsonApi.model.ClientRequest;
 import com.example.gateway.JsonApi.model.ClientRequestDTO;
 import com.example.gateway.JsonApi.service.ClientRequestService;
-import com.example.gateway.RatesCollector.model.RatesResponseData;
+import com.example.gateway.RatesCollector.model.DataBase.AuditLog;
+import com.example.gateway.RatesCollector.model.DataBase.RatesResponseData;
 import com.example.gateway.RatesCollector.service.RatesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -46,9 +47,9 @@ public class JsonController {
 
 
     @PostMapping("/history")
-    public List<RatesResponseData> postHistory(@RequestBody ClientRequestDTO clientRequestDTO){
+    public List<AuditLog> postHistory(@RequestBody ClientRequestDTO clientRequestDTO){
 
-        List<RatesResponseData> responseDataList = ratesService.getLatestRatesForPeriod(clientRequestDTO.getCurrency(), clientRequestDTO.getPeriod()) ;
+        List<AuditLog> responseDataList = ratesService.getLatestRatesForPeriod(clientRequestDTO.getCurrency(), clientRequestDTO.getPeriod()) ;
         return responseDataList;
     }
 
