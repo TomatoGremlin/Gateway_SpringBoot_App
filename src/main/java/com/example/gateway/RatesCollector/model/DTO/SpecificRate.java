@@ -1,11 +1,10 @@
 package com.example.gateway.RatesCollector.model.DTO;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
-import java.util.Map;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -14,10 +13,9 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 
-public class RatesDTO {
-    boolean success;
-    long timestamp;
+public class SpecificRate {
     String base;
-    String date;
-    Map<String, BigDecimal> rates;
+    String currency;
+    BigDecimal rate;
+    LocalDateTime dateTime;
 }

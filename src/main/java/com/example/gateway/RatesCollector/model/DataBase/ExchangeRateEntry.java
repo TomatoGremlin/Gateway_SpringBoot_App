@@ -4,10 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.util.List;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @EntityListeners(AuditingEntityListener.class)
@@ -20,7 +19,7 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "rates_data")
 @Entity
-public class RatesResponseData {
+public class ExchangeRateEntry {
 
     @Id
     @Column(name = "request_id")
@@ -33,10 +32,10 @@ public class RatesResponseData {
     @Column(name = "base")
     String base;
 
-    @CreatedDate
-    @Column(name = "date")
-    String date;
+    @Column(name = "currency")
+    String currency;
 
-    @OneToMany(mappedBy = "ratesResponseData", cascade = CascadeType.ALL) // mappedBy = this is the object in the other entity
-    List<ExchangeRate> exchangeRateList;
+    @Column(name = "rate", precision = 10, scale = 6)
+    BigDecimal rate;
+
 }

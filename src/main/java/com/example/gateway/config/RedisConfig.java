@@ -29,29 +29,29 @@ public class RedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
 
         template.setConnectionFactory(jedisConnectionFactory());
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setHashKeySerializer(new StringRedisSerializer());
-        template.setHashKeySerializer(new JdkSerializationRedisSerializer());
-        template.setValueSerializer(new JdkSerializationRedisSerializer());
+        template.setKeySerializer(RedisSerializer.byteArray());
+        template.setHashKeySerializer(RedisSerializer.string());
+        template.setHashKeySerializer(RedisSerializer.string());
+//        template.setValueSerializer(new JdkSerializationRedisSerializer());
         template.afterPropertiesSet();
         template.setEnableTransactionSupport(true);
         return template;
 
     }
-    @Bean
-    @Primary
-    public RedisCacheConfiguration defaultCacheConfig(ObjectMapper objectMapper) {
-        return RedisCacheConfiguration.defaultCacheConfig()
-                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer(objectMapper)));
-    }
-
-    @Bean
-    public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory, ObjectMapper objectMapper) {
-        return RedisCacheManager.builder(connectionFactory)
-                .cacheDefaults(defaultCacheConfig(objectMapper))
-                .transactionAware()
-                .build();
-    }
+//    @Bean
+//    @Primary
+//    public RedisCacheConfiguration defaultCacheConfig(ObjectMapper objectMapper) {
+//        return RedisCacheConfiguration.defaultCacheConfig()
+//                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
+//                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer(objectMapper)));
+//    }
+//
+//    @Bean
+//    public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory, ObjectMapper objectMapper) {
+//        return RedisCacheManager.builder(connectionFactory)
+//                .cacheDefaults(defaultCacheConfig(objectMapper))
+//                .transactionAware()
+//                .build();
+//    }
 
 }

@@ -28,13 +28,16 @@ public class AuditLog {
     @Column(name = "date_updated")
     LocalDateTime dateUpdated;
 
+    @Column(name = "operation_type")
+    String operationType;
+
     @Column(name = "base")
     String base;
 
     @Column(name = "currency")
     String currency;
 
-    @Column(name = "rate")
+    @Column(name = "rate", precision = 10, scale = 6)
     BigDecimal rate;
 
 }

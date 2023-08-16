@@ -15,9 +15,10 @@ public class AuditLogService {
     @Autowired
     private AuditLogRepo auditLogRepo;
 
-    public AuditLog createAuditLog(RatesDTO ratesDTO, String currency, BigDecimal rate) {
+    public AuditLog createAuditLog(RatesDTO ratesDTO, String operationType, String currency, BigDecimal rate) {
         AuditLog auditLog = new AuditLog();
         auditLog.setRequestId(UUID.randomUUID());
+        auditLog.setOperationType(operationType);
         auditLog.setBase(ratesDTO.getBase());
         auditLog.setCurrency(currency);
         auditLog.setRate(rate);

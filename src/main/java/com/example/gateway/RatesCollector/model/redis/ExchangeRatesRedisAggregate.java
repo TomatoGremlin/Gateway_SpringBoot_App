@@ -2,6 +2,7 @@ package com.example.gateway.RatesCollector.model.redis;
 
 
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 
@@ -15,9 +16,12 @@ import java.util.Map;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+
 @RedisHash("currency-exchange-rate")
-public class CurrencyExchangeRates implements Serializable {
+public class ExchangeRatesRedisAggregate implements Serializable {
     @Id
-    private String baseCurrency;
-    private Map<String, BigDecimal> foreignRates = new HashMap<>();
+    String baseCurrency;
+    Map<String, BigDecimal> foreignRates = new HashMap<>();
+    long timestamp;
 }
