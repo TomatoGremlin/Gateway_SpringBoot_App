@@ -1,8 +1,7 @@
-package com.example.gateway.JsonApi.model;
+package com.example.gateway.Api.model;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Getter

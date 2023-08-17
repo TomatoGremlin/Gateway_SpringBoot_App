@@ -1,6 +1,6 @@
-package com.example.gateway.JsonApi.repository;
+package com.example.gateway.Api.repository;
 
-import com.example.gateway.JsonApi.model.ClientRequest;
+import com.example.gateway.Api.model.ClientRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;

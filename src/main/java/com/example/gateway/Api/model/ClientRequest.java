@@ -1,4 +1,4 @@
-package com.example.gateway.JsonApi.model;
+package com.example.gateway.Api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
@@ -7,6 +7,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.io.Serializable;
 import java.util.UUID;
 
 @Getter
@@ -17,11 +19,10 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "client_statistics")
 @Entity
-public class ClientRequest {
+public class ClientRequest implements Serializable {
 
     @Id
     @Column(name = "request_id")
-    @JsonIgnore
     UUID requestId;
 
     @Column(name = "service")

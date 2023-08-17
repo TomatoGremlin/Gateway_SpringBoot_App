@@ -1,8 +1,8 @@
-package com.example.gateway.JsonApi.service;
+package com.example.gateway.Api.service;
 
-import com.example.gateway.JsonApi.repository.ClientRequestsRepo;
-import com.example.gateway.JsonApi.model.ClientRequest;
-import com.example.gateway.JsonApi.model.ClientRequestDTO;
+import com.example.gateway.Api.repository.ClientRequestsRepo;
+import com.example.gateway.Api.model.ClientRequest;
+import com.example.gateway.Api.model.ClientRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

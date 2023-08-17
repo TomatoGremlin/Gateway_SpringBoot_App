@@ -1,8 +1,8 @@
-package com.example.gateway.JsonApi.controller;
+package com.example.gateway.Api.controller;
 
-import com.example.gateway.JsonApi.model.ClientRequest;
-import com.example.gateway.JsonApi.model.ClientRequestDTO;
-import com.example.gateway.JsonApi.service.ClientRequestService;
+import com.example.gateway.Api.model.ClientRequest;
+import com.example.gateway.Api.model.ClientRequestDTO;
+import com.example.gateway.Api.service.ClientRequestService;
 import com.example.gateway.RatesCollector.model.DTO.RatesDTO;
 import com.example.gateway.RatesCollector.model.DTO.SpecificRate;
 import com.example.gateway.RatesCollector.model.DataBase.AuditLog;
@@ -15,7 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/json_api")
-public class JsonController {
+public class ClientController {
     @Autowired
     private ClientRequestService clientRequestService;
     @Autowired
@@ -32,7 +32,7 @@ public class JsonController {
     @PostMapping("/current/{quoteCurrency}")
     public ResponseEntity<SpecificRate> postCurrentByQuoteRate(@RequestBody ClientRequestDTO clientRequestDTO, @PathVariable String quoteCurrency){
         clientRequestService.save(clientRequestDTO);
-        SpecificRate fetched = ratesService.getSpecifictRateData(clientRequestDTO.getCurrency(), quoteCurrency);
+        SpecificRate fetched = ratesService.getSpecificRateData(clientRequestDTO.getCurrency(), quoteCurrency);
         return ResponseEntity.ok(fetched);
     }
 

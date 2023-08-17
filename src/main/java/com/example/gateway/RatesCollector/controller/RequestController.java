@@ -23,8 +23,8 @@ public class RequestController {
     private RatesService ratesService;
 
     //@GetMapping("/getRates")
-    public RatesDTO fetch() {
-        return fixerApiService.fetchData();
+    public ResponseEntity<RatesDTO> fetch() {
+        return ResponseEntity.ok(fixerApiService.fetchData());
     }
 
     //@Scheduled(fixedRate = 40000) // the parameter is in milliseconds , Fetch every 30 sec

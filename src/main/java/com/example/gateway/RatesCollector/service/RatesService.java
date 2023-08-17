@@ -1,5 +1,7 @@
 package com.example.gateway.RatesCollector.service;
 
+import com.example.gateway.Api.service.ClientRequestService;
+import com.example.gateway.RatesCollector.model.DTO.CommonResponse;
 import com.example.gateway.RatesCollector.model.DTO.SpecificRate;
 import com.example.gateway.RatesCollector.model.DataBase.AuditLog;
 import com.example.gateway.RatesCollector.model.DataBase.ExchangeRateEntry;
@@ -34,6 +36,8 @@ public class RatesService {
 
     @Autowired
     ExchangeRateRedisRepo exchangeRateRedisRepo;
+    @Autowired
+    ClientRequestService clientRequestService;
 
     public List<ExchangeRateEntry> getResponse(RatesDTO ratesDto) {
         List<ExchangeRateEntry> responseDataList = new ArrayList<>();
@@ -109,65 +113,65 @@ public class RatesService {
         ratesResponse.setBase(base);
         ratesResponse.setSuccess(true);
 
-        Optional<ExchangeRatesRedisAggregate> exchangeRatesRedisAggregate = exchangeRateRedisRepo.findById(base);
+        CommonResponse commonResponse = getRatesFromCacheOrDatabase(base);
 
-        //get from redis
-        if (exchangeRatesRedisAggregate.isPresent()) {
-            ExchangeRatesRedisAggregate existingCache = exchangeRatesRedisAggregate.get();
-            ratesResponse.setRates(existingCache.getForeignRates());
-            ratesResponse.setTimestamp(existingCache.getTimestamp());
-            LocalDateTime localDateTime = convertUnixTimestampToUTC(existingCache.getTimestamp());
-            ratesResponse.setDate(String.valueOf(localDateTime));
-
-        } // get from database
-        else {
-            List<ExchangeRateEntry> existingDataBaseEntries = ratesRepo.findLatestRatesByCurrency(base);
-            long timestamp = existingDataBaseEntries.get(0).getTimestamp();
-            Map<String, BigDecimal> map = new HashMap<>();
-            for (ExchangeRateEntry rate : existingDataBaseEntries) {
-                map.put(rate.getCurrency(), rate.getRate());
-            }
-            ratesResponse.setRates(map);
-            ratesResponse.setTimestamp(timestamp);
-            LocalDateTime localDateTime = convertUnixTimestampToUTC(timestamp);
-            ratesResponse.setDate(String.valueOf(localDateTime));
+        ratesResponse.setRates(commonResponse.getRates());
+        ratesResponse.setTimestamp(commonResponse.getTimestamp());
+        ratesResponse.setDate(commonResponse.getLocalDateTime().toLocalDate());
 
 
-            saveRatesDataToRedis(ratesResponse);
-        }
+
         return ratesResponse;
     }
 
-
-    public SpecificRate getSpecifictRateData(String base, String currency) {
+    public SpecificRate getSpecificRateData(String base, String currency) {
         SpecificRate specificRate = new SpecificRate();
         specificRate.setBase(base);
         specificRate.setCurrency(currency);
 
-        Optional<ExchangeRatesRedisAggregate> exchangeRatesRedisAggregate = exchangeRateRedisRepo.findById(base);
+        CommonResponse commonResponse = getRatesFromCacheOrDatabase(base);
 
-        //get from redis
+        specificRate.setRate(commonResponse.getRates().get(currency));
+        specificRate.setDateTime(commonResponse.getLocalDateTime());
+
+        return specificRate;
+    }
+
+    private CommonResponse getRatesFromCacheOrDatabase(String base) {
+        CommonResponse commonResponse = new CommonResponse();
+
+        Optional<ExchangeRatesRedisAggregate> exchangeRatesRedisAggregate = exchangeRateRedisRepo.findById(base);
+        LocalDateTime dateTime = null ;
+        long timestamp = 0;
+
         if (exchangeRatesRedisAggregate.isPresent()) {
             ExchangeRatesRedisAggregate existingCache = exchangeRatesRedisAggregate.get();
-            specificRate.setRate(existingCache.getForeignRates().get(currency));
-            LocalDateTime localDateTime = convertUnixTimestampToUTC(existingCache.getTimestamp());
-            specificRate.setDateTime(localDateTime);
+            timestamp = existingCache.getTimestamp();
+            dateTime = convertUnixTimestampToUTC(timestamp);
 
-        } // get from database
-        else {
+            commonResponse.setRates(existingCache.getForeignRates());
+            commonResponse.setTimestamp(timestamp);
+            commonResponse.setLocalDateTime(dateTime);
+
+        } else {
             List<ExchangeRateEntry> existingDataBaseEntries = ratesRepo.findLatestRatesByCurrency(base);
-            long timestamp = existingDataBaseEntries.get(0).getTimestamp();
+            timestamp = existingDataBaseEntries.get(0).getTimestamp();
+            dateTime = convertUnixTimestampToUTC(timestamp);
+
             Map<String, BigDecimal> map = new HashMap<>();
             for (ExchangeRateEntry rate : existingDataBaseEntries) {
                 map.put(rate.getCurrency(), rate.getRate());
             }
-            specificRate.setRate(map.get(currency));
-            LocalDateTime localDateTime = convertUnixTimestampToUTC(timestamp);
-            specificRate.setDateTime(localDateTime);
-        }
-        return specificRate;
-    }
 
+            commonResponse.setRates(map);
+            commonResponse.setTimestamp(timestamp);
+            commonResponse.setLocalDateTime(dateTime);
+            RatesDTO ratesDTO = new RatesDTO(true, timestamp, base, dateTime.toLocalDate() ,map);
+
+            saveRatesDataToRedis(ratesDTO);
+        }
+        return commonResponse;
+    }
 
     public LocalDateTime convertUnixTimestampToUTC(long unixTimestamp) {
         Instant instant = Instant.ofEpochSecond(unixTimestamp);
@@ -179,14 +183,3 @@ public class RatesService {
 
 
 
-
-//    public RatesDTO makeResponse(String base, Object object){
-//        RatesDTO ratesResponse = new RatesDTO();
-//
-//        ratesResponse.setBase(base);
-//        ratesResponse.setSuccess(true);
-//        ratesResponse.setRates(existingCache.getForeignRates());
-//        ratesResponse.setTimestamp(existingCache.getTimestamp());
-//        LocalDateTime localDateTime = convertUnixTimestampToUTC(existingCache.getTimestamp());
-//        ratesResponse.setDate(String.valueOf(localDateTime));
-//    }
