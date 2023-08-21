@@ -1,7 +1,6 @@
 package com.example.gateway.ratesCollector.service;
 
-import com.example.gateway.ratesCollector.controller.dto.CommonResponse;
-import com.example.gateway.ratesCollector.controller.dto.SpecificRateResponse;
+import com.example.gateway.ratesCollector.controller.dto.RatesResponse;
 import com.example.gateway.exceptions.HistoryRatesNotFoundException;
 import com.example.gateway.exceptions.RatesNotFoundException;
 import com.example.gateway.ratesCollector.model.AuditLog;
@@ -49,7 +48,6 @@ public class RatesCollectorService {
         saveRatesDataToRedis(fetchedData);
         storeToDataBase(fetchedData);
         amqpTemplate.convertAndSend("direct-exchange", "rates", fetchedData);
-
         return fetchedData;
     }
 
@@ -70,7 +68,7 @@ public class RatesCollectorService {
             for (Map.Entry<String, BigDecimal> entry : ratesDto.getRates().entrySet()) {
                 String currency = entry.getKey();
                 BigDecimal rate = entry.getValue();
-                ExchangeRateEntry entryToUpdate = ratesRepo.findLatestRatesByBaseQuotePair(base, currency);
+                ExchangeRateEntry entryToUpdate = ratesRepo.findLatestRatesByBaseQuotePair(base, currency).get();
                 entryToUpdate = update(entryToUpdate, ratesDto, currency, rate);
 
                 responseDataList.add(entryToUpdate);
@@ -112,9 +110,9 @@ public class RatesCollectorService {
         exchangeRatesRedisAggregate.setTimestamp(ratesDTO.getTimestamp());
         exchangeRateRedisRepo.save(exchangeRatesRedisAggregate);
     }
-    public CommonResponse getLatestRatesData(String base) throws RatesNotFoundException {
-        CommonResponse commonResponse = getRatesFromCacheOrDatabase(base);
-        return commonResponse;
+    public RatesResponse getLatestRatesData(String base) throws RatesNotFoundException {
+        RatesResponse ratesResponse = getRatesFromCacheOrDatabase(base);
+        return ratesResponse;
     }
 
     public List<AuditLog> getLatestRatesForPeriod(String baseCurrency, long period) throws HistoryRatesNotFoundException {
@@ -129,22 +127,24 @@ public class RatesCollectorService {
     }
 
 
-    public SpecificRateResponse getSpecificRateData(String base, String currency) throws RatesNotFoundException {
-        SpecificRateResponse specificRateResponse = new SpecificRateResponse();
+    public RatesResponse getSpecificRateData(String base, String currency) throws RatesNotFoundException {
+        RatesResponse ratesResponse = getRatesFromCacheOrDatabase(base);
+
+        if (!ratesResponse.getRates().containsKey(currency)) {
+            throw new RatesNotFoundException("Rate for currency " + currency + " was not found for base " + base, base);
+        }
+
+        RatesResponse specificRateResponse = new RatesResponse();
         specificRateResponse.setBase(base);
-        specificRateResponse.setCurrency(currency);
-
-        CommonResponse commonResponse = getRatesFromCacheOrDatabase(base);
-
-        specificRateResponse.setRate(commonResponse.getRates().get(currency));
-        specificRateResponse.setDateTime(commonResponse.getDateLastUpdated());
+        specificRateResponse.setRates(Collections.singletonMap(currency, ratesResponse.getRates().get(currency)));
+        specificRateResponse.setDateLastUpdated(ratesResponse.getDateLastUpdated());
 
         return specificRateResponse;
     }
 
-    private CommonResponse getRatesFromCacheOrDatabase(String base) throws RatesNotFoundException {
-        CommonResponse commonResponse = new CommonResponse();
-        commonResponse.setBase(base);
+    private RatesResponse getRatesFromCacheOrDatabase(String base) throws RatesNotFoundException {
+        RatesResponse ratesResponse = new RatesResponse();
+        ratesResponse.setBase(base);
 
         Optional<ExchangeRatesRedisAggregate> exchangeRatesRedisAggregate = exchangeRateRedisRepo.findById(base);
         LocalDateTime dateTime = null;
@@ -154,8 +154,8 @@ public class RatesCollectorService {
             ExchangeRatesRedisAggregate existingCache = exchangeRatesRedisAggregate.get();
             timestamp = existingCache.getTimestamp();
             dateTime = ratesUtilService.convertUnixTimestampToUTC(timestamp);
-            commonResponse.setRates(existingCache.getForeignRates());
-            commonResponse.setDateLastUpdated(dateTime);
+            ratesResponse.setRates(existingCache.getForeignRates());
+            ratesResponse.setDateLastUpdated(dateTime);
 
         } else {
             Optional<List<ExchangeRateEntry>> dataBaseEntries = ratesRepo.findLatestRatesByBaseCurrency(base);
@@ -167,13 +167,13 @@ public class RatesCollectorService {
             dateTime = ratesUtilService.convertUnixTimestampToUTC(timestamp);
 
             Map<String, BigDecimal> map = ratesUtilService.makeEntriesIntoMap(existingDataBaseEntries);
-            commonResponse.setRates(map);
-            commonResponse.setDateLastUpdated(dateTime);
+            ratesResponse.setRates(map);
+            ratesResponse.setDateLastUpdated(dateTime);
             
             RatesDTO ratesCache = new RatesDTO(true, timestamp, base, dateTime.toLocalDate(), map);
             saveRatesDataToRedis(ratesCache);
         }
-        return commonResponse;
+        return ratesResponse;
     }
 
 

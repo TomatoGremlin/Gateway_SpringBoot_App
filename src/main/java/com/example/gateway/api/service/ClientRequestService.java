@@ -4,7 +4,7 @@ import com.example.gateway.api.controller.dto.ClientHistoryRequestDTO;
 import com.example.gateway.api.repository.ClientRequestsRepo;
 import com.example.gateway.api.model.ClientRequest;
 import com.example.gateway.api.controller.dto.ClientRequestDTO;
-import com.example.gateway.ratesCollector.controller.dto.CommonResponse;
+import com.example.gateway.ratesCollector.controller.dto.RatesResponse;
 import com.example.gateway.exceptions.ClientRequestExeption;
 import com.example.gateway.exceptions.RatesNotFoundException;
 import com.example.gateway.ratesCollector.model.AuditLog;
@@ -30,9 +30,9 @@ public class ClientRequestService {
     @Autowired
     private RatesUtilService ratesUtilService;
 
-    public CommonResponse getCurrentResponse(ClientRequestDTO clientRequestDTO) throws RatesNotFoundException, ClientRequestExeption {
+    public RatesResponse getCurrentResponse(ClientRequestDTO clientRequestDTO) throws RatesNotFoundException, ClientRequestExeption {
         handleClientRequest(clientRequestDTO);
-        CommonResponse fetched = ratesCollectorService.getLatestRatesData(clientRequestDTO.getBaseCurrency());
+        RatesResponse fetched = ratesCollectorService.getLatestRatesData(clientRequestDTO.getBaseCurrency());
         return fetched;
     }
     public List<AuditLog>  getHistoryResponse(ClientHistoryRequestDTO historyRequestDTO ) throws RatesNotFoundException, ClientRequestExeption {
@@ -40,6 +40,13 @@ public class ClientRequestService {
         List<AuditLog> fetched = ratesCollectorService.getLatestRatesForPeriod(historyRequestDTO.getBaseCurrency(), historyRequestDTO.getPeriod());
         return fetched;
     }
+
+    public RatesResponse getCurrentPairResponse(ClientRequestDTO clientRequestDTO, String quoteCurrency) throws RatesNotFoundException, ClientRequestExeption {
+        handleClientRequest(clientRequestDTO);
+        RatesResponse fetched = ratesCollectorService.getSpecificRateData(clientRequestDTO.getBaseCurrency(), quoteCurrency);
+        return fetched;
+    }
+
 
 
     private void  handleClientRequest(ClientRequestDTO clientRequestDTO) throws  ClientRequestExeption {

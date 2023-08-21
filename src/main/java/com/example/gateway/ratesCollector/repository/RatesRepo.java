@@ -14,7 +14,7 @@ import java.util.UUID;
 public interface RatesRepo extends JpaRepository<ExchangeRateEntry, UUID> {
 
     @Query(value = "SELECT * FROM rates_data  WHERE base = :base AND currency =:quoteCurrency ", nativeQuery = true)
-    public ExchangeRateEntry findLatestRatesByBaseQuotePair(@Param("base") String base, @Param("quoteCurrency") String quoteCurrency);
+    public Optional<ExchangeRateEntry> findLatestRatesByBaseQuotePair(@Param("base") String base, @Param("quoteCurrency") String quoteCurrency);
     @Query(value = "SELECT * FROM rates_data  WHERE base = :currency ", nativeQuery = true)
     public Optional<List<ExchangeRateEntry>> findLatestRatesByBaseCurrency(@Param("currency") String currency);
 

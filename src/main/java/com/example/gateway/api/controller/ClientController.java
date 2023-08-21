@@ -5,11 +5,9 @@ import com.example.gateway.api.controller.dto.ClientRequestDTO;
 import com.example.gateway.api.model.ClientRequest;
 import com.example.gateway.api.service.ClientRequestService;
 import com.example.gateway.exceptions.ClientRequestExeption;
-import com.example.gateway.ratesCollector.controller.dto.CommonResponse;
-import com.example.gateway.ratesCollector.controller.dto.RatesDTO;
+import com.example.gateway.ratesCollector.controller.dto.RatesResponse;
 import com.example.gateway.exceptions.RatesNotFoundException;
 import com.example.gateway.ratesCollector.model.AuditLog;
-import com.example.gateway.ratesCollector.service.RatesCollectorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,8 +21,8 @@ public class ClientController {
     private ClientRequestService clientRequestService;
 
     @PostMapping("/current")
-    public ResponseEntity<CommonResponse> postCurrent(@RequestBody ClientRequestDTO clientRequestDTO) throws RatesNotFoundException, ClientRequestExeption {
-        CommonResponse fetched = clientRequestService.getCurrentResponse(clientRequestDTO);
+    public ResponseEntity<RatesResponse> postCurrent(@RequestBody ClientRequestDTO clientRequestDTO) throws RatesNotFoundException, ClientRequestExeption {
+        RatesResponse fetched = clientRequestService.getCurrentResponse(clientRequestDTO);
         return ResponseEntity.ok(fetched);
     }
 
@@ -34,18 +32,17 @@ public class ClientController {
         return ResponseEntity.ok(responseDataList);
     }
 
-    /* @PostMapping("/current/{quoteCurrency}")
-     public ResponseEntity<SpecificRateResponse> postCurrentByQuoteRate(@RequestBody ClientRequestDTO clientRequestDTO, @PathVariable String quoteCurrency) throws RatesNotFoundException {
-         clientRequestService.save(clientRequestDTO);
-         SpecificRateResponse fetched = ratesCollectorService.getSpecificRateData(clientRequestDTO.getBaseCurrency(), quoteCurrency);
+   /* @PostMapping("/current/{quoteCurrency}")
+     public ResponseEntity<RatesResponse> postCurrentByQuoteRate(@RequestBody ClientRequestDTO clientRequestDTO, @PathVariable String quoteCurrency) throws RatesNotFoundException, ClientRequestExeption {
+         RatesResponse fetched = clientRequestService.getCurrentPairResponse(clientRequestDTO, quoteCurrency);
          return ResponseEntity.ok(fetched);
-     }
+     }*/
     @PostMapping("/postClientRequest")
     public ResponseEntity<ClientRequest> postRequest(@RequestBody ClientRequestDTO clientRequestDTO){
         ClientRequest saved = clientRequestService.save(clientRequestDTO);
         return ResponseEntity.ok(saved);
     }
-    */
+
 
 
 }
