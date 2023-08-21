@@ -1,11 +1,11 @@
 package com.example.gateway.api.service;
 
 import com.example.gateway.api.controller.dto.ClientHistoryRequestDTO;
-import com.example.gateway.api.controller.dto.HistoryResponse;
+import com.example.gateway.ratesCollector.controller.dto.CurrentResponse;
+import com.example.gateway.ratesCollector.controller.dto.HistoryResponse;
 import com.example.gateway.api.repository.ClientRequestsRepo;
 import com.example.gateway.api.model.ClientRequest;
 import com.example.gateway.api.controller.dto.ClientRequestDTO;
-import com.example.gateway.ratesCollector.controller.dto.RatesResponse;
 import com.example.gateway.exceptions.ClientRequestExeption;
 import com.example.gateway.exceptions.RatesNotFoundException;
 import com.example.gateway.ratesCollector.model.AuditLog;
@@ -31,9 +31,9 @@ public class ClientRequestService {
     @Autowired
     private RatesUtilService ratesUtilService;
 
-    public RatesResponse getCurrentResponse(ClientRequestDTO clientRequestDTO) throws RatesNotFoundException, ClientRequestExeption {
+    public CurrentResponse getCurrentResponse(ClientRequestDTO clientRequestDTO) throws RatesNotFoundException, ClientRequestExeption {
         handleClientRequest(clientRequestDTO);
-        RatesResponse response = ratesCollectorService.getLatestRatesData(clientRequestDTO.getBaseCurrency());
+        CurrentResponse response = ratesCollectorService.getLatestRatesData(clientRequestDTO.getBaseCurrency());
         return response;
     }
     public HistoryResponse getHistoryResponse(ClientHistoryRequestDTO historyRequestDTO ) throws RatesNotFoundException, ClientRequestExeption {
@@ -43,9 +43,9 @@ public class ClientRequestService {
         return response;
     }
 
-    public RatesResponse getCurrentPairResponse(ClientRequestDTO clientRequestDTO, String quoteCurrency) throws RatesNotFoundException, ClientRequestExeption {
+    public CurrentResponse getCurrentPairResponse(ClientRequestDTO clientRequestDTO, String quoteCurrency) throws RatesNotFoundException, ClientRequestExeption {
         handleClientRequest(clientRequestDTO);
-        RatesResponse fetched = ratesCollectorService.getSpecificRateData(clientRequestDTO.getBaseCurrency(), quoteCurrency);
+        CurrentResponse fetched = ratesCollectorService.getSpecificRateData(clientRequestDTO.getBaseCurrency(), quoteCurrency);
         return fetched;
     }
 

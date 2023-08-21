@@ -13,7 +13,7 @@ import java.util.Map;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @AllArgsConstructor
 @NoArgsConstructor
-public class RatesResponse {
+public class CurrentResponse {
     String base;
     Map<String, BigDecimal> rates;
     LocalDateTime dateLastUpdated;

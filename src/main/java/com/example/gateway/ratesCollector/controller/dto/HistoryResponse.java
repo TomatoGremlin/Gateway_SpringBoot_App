@@ -1,4 +1,4 @@
-package com.example.gateway.api.controller.dto;
+package com.example.gateway.ratesCollector.controller.dto;
 
 import com.example.gateway.ratesCollector.model.AuditLog;
 import lombok.*;
