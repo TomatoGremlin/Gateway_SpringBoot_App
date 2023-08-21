@@ -78,7 +78,6 @@ public class RatesCollectorService {
     }
 
     public ExchangeRateEntry save(RatesDTO ratesDto, String currency, BigDecimal rate) {
-
         ExchangeRateEntry exchangeRateEntryToSave = new ExchangeRateEntry();
         exchangeRateEntryToSave.setRequestId(UUID.randomUUID());
         exchangeRateEntryToSave.setTimestamp(ratesDto.getTimestamp());
@@ -86,10 +85,8 @@ public class RatesCollectorService {
         exchangeRateEntryToSave.setCurrency(currency);
         exchangeRateEntryToSave.setRate(rate);
 
-
         exchangeRateEntryToSave = ratesRepo.save(exchangeRateEntryToSave);
         auditLogService.createAuditLog(ratesDto, "SAVE", currency, rate);
-
         return exchangeRateEntryToSave;
     }
 
@@ -102,7 +99,6 @@ public class RatesCollectorService {
     }
 
 
-
     public void saveRatesDataToRedis(RatesDTO ratesDTO) {
         ExchangeRatesRedisAggregate exchangeRatesRedisAggregate = new ExchangeRatesRedisAggregate();
         exchangeRatesRedisAggregate.setBaseCurrency(ratesDTO.getBase());
@@ -110,6 +106,7 @@ public class RatesCollectorService {
         exchangeRatesRedisAggregate.setTimestamp(ratesDTO.getTimestamp());
         exchangeRateRedisRepo.save(exchangeRatesRedisAggregate);
     }
+
     public RatesResponse getLatestRatesData(String base) throws RatesNotFoundException {
         RatesResponse ratesResponse = getRatesFromCacheOrDatabase(base);
         return ratesResponse;
@@ -118,27 +115,24 @@ public class RatesCollectorService {
     public List<AuditLog> getLatestRatesForPeriod(String baseCurrency, long period) throws HistoryRatesNotFoundException {
         LocalDateTime startTime = ratesUtilService.calculateTimeStamp(period);
         Optional<List<AuditLog>> rates = auditLogRepo.findLatestRatesByTimeStamp(baseCurrency, startTime);
-        if (!rates.isPresent()){
-            throw new HistoryRatesNotFoundException("Rates in the last " + period + " hours for base currency "+ baseCurrency + " were not found", baseCurrency, period );
+        if (!rates.isPresent()) {
+            throw new HistoryRatesNotFoundException("Rates in the last " + period + " hours for base currency " + baseCurrency + " were not found", baseCurrency, period);
         }
         List<AuditLog> existigHistoryRates = rates.get();
-
         return existigHistoryRates;
     }
 
 
     public RatesResponse getSpecificRateData(String base, String currency) throws RatesNotFoundException {
         RatesResponse ratesResponse = getRatesFromCacheOrDatabase(base);
-
         if (!ratesResponse.getRates().containsKey(currency)) {
             throw new RatesNotFoundException("Rate for currency " + currency + " was not found for base " + base, base);
         }
-
         RatesResponse specificRateResponse = new RatesResponse();
         specificRateResponse.setBase(base);
-        specificRateResponse.setRates(Collections.singletonMap(currency, ratesResponse.getRates().get(currency)));
+        BigDecimal correspondingRateValue = ratesResponse.getRates().get(currency);
+        specificRateResponse.setRates(Collections.singletonMap(currency, correspondingRateValue));
         specificRateResponse.setDateLastUpdated(ratesResponse.getDateLastUpdated());
-
         return specificRateResponse;
     }
 
@@ -146,37 +140,40 @@ public class RatesCollectorService {
         RatesResponse ratesResponse = new RatesResponse();
         ratesResponse.setBase(base);
 
-        Optional<ExchangeRatesRedisAggregate> exchangeRatesRedisAggregate = exchangeRateRedisRepo.findById(base);
-        LocalDateTime dateTime = null;
-        long timestamp = 0;
-
-        if (exchangeRatesRedisAggregate.isPresent()) {
-            ExchangeRatesRedisAggregate existingCache = exchangeRatesRedisAggregate.get();
-            timestamp = existingCache.getTimestamp();
-            dateTime = ratesUtilService.convertUnixTimestampToUTC(timestamp);
-            ratesResponse.setRates(existingCache.getForeignRates());
-            ratesResponse.setDateLastUpdated(dateTime);
-
+        Optional<ExchangeRatesRedisAggregate> cacheResult = exchangeRateRedisRepo.findById(base);
+        if (cacheResult.isPresent()) {
+            updateResponseFromCache(ratesResponse, cacheResult.get());
         } else {
-            Optional<List<ExchangeRateEntry>> dataBaseEntries = ratesRepo.findLatestRatesByBaseCurrency(base);
-            if (!dataBaseEntries.isPresent()){
-                throw new RatesNotFoundException("Rates for base " +  base + " were not found in database", base);
-            }
-            List<ExchangeRateEntry> existingDataBaseEntries = dataBaseEntries.get();
-            timestamp = existingDataBaseEntries.get(0).getTimestamp();
-            dateTime = ratesUtilService.convertUnixTimestampToUTC(timestamp);
-
-            Map<String, BigDecimal> map = ratesUtilService.makeEntriesIntoMap(existingDataBaseEntries);
-            ratesResponse.setRates(map);
-            ratesResponse.setDateLastUpdated(dateTime);
-            
-            RatesDTO ratesCache = new RatesDTO(true, timestamp, base, dateTime.toLocalDate(), map);
-            saveRatesDataToRedis(ratesCache);
+            updateResponseFromDatabase(ratesResponse, base);
         }
         return ratesResponse;
     }
 
+    private void updateResponseFromCache(RatesResponse ratesResponse, ExchangeRatesRedisAggregate cacheData) {
+        long timestamp = cacheData.getTimestamp();
+        LocalDateTime dateTime = ratesUtilService.convertUnixTimestampToUTC(timestamp);
 
+        ratesResponse.setRates(cacheData.getForeignRates());
+        ratesResponse.setDateLastUpdated(dateTime);
+    }
+
+    private void updateResponseFromDatabase(RatesResponse ratesResponse, String base) throws RatesNotFoundException {
+        Optional<List<ExchangeRateEntry>> databaseResult = ratesRepo.findLatestRatesByBaseCurrency(base);
+        if (!databaseResult.isPresent()) {
+            throw new RatesNotFoundException("Rates for base " + base + " were not found in the database", base);
+        }
+
+        List<ExchangeRateEntry> databaseEntries = databaseResult.get();
+        long timestamp = databaseEntries.get(0).getTimestamp();
+        LocalDateTime dateTime = ratesUtilService.convertUnixTimestampToUTC(timestamp);
+
+        Map<String, BigDecimal> ratesMap = ratesUtilService.makeEntriesIntoMap(databaseEntries);
+        ratesResponse.setRates(ratesMap);
+        ratesResponse.setDateLastUpdated(dateTime);
+
+        RatesDTO ratesCache = new RatesDTO(true, timestamp, base, dateTime.toLocalDate(), ratesMap);
+        saveRatesDataToRedis(ratesCache);
+    }
 }
 
 

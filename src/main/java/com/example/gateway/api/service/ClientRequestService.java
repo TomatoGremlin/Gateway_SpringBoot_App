@@ -1,6 +1,7 @@
 package com.example.gateway.api.service;
 
 import com.example.gateway.api.controller.dto.ClientHistoryRequestDTO;
+import com.example.gateway.api.controller.dto.HistoryResponse;
 import com.example.gateway.api.repository.ClientRequestsRepo;
 import com.example.gateway.api.model.ClientRequest;
 import com.example.gateway.api.controller.dto.ClientRequestDTO;
@@ -32,13 +33,14 @@ public class ClientRequestService {
 
     public RatesResponse getCurrentResponse(ClientRequestDTO clientRequestDTO) throws RatesNotFoundException, ClientRequestExeption {
         handleClientRequest(clientRequestDTO);
-        RatesResponse fetched = ratesCollectorService.getLatestRatesData(clientRequestDTO.getBaseCurrency());
-        return fetched;
+        RatesResponse response = ratesCollectorService.getLatestRatesData(clientRequestDTO.getBaseCurrency());
+        return response;
     }
-    public List<AuditLog>  getHistoryResponse(ClientHistoryRequestDTO historyRequestDTO ) throws RatesNotFoundException, ClientRequestExeption {
+    public HistoryResponse getHistoryResponse(ClientHistoryRequestDTO historyRequestDTO ) throws RatesNotFoundException, ClientRequestExeption {
         handleClientRequest(historyRequestDTO);
         List<AuditLog> fetched = ratesCollectorService.getLatestRatesForPeriod(historyRequestDTO.getBaseCurrency(), historyRequestDTO.getPeriod());
-        return fetched;
+        HistoryResponse response = new HistoryResponse(fetched);
+        return response;
     }
 
     public RatesResponse getCurrentPairResponse(ClientRequestDTO clientRequestDTO, String quoteCurrency) throws RatesNotFoundException, ClientRequestExeption {
@@ -61,7 +63,6 @@ public class ClientRequestService {
             throw new ClientRequestExeption("Request with id " + id + " already exists in database", id );
         }
     }
-
 
     public ClientRequest save(ClientRequestDTO clientRequestDTO){
         ClientRequest requestToSave = new ClientRequest();

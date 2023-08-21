@@ -29,4 +29,3 @@ public class RatesController {
 
 }
 
-// powershll script za izpulnenieto na edin request 100 puti
